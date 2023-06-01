@@ -11,20 +11,6 @@ files = [
 ]
 
 [[package]]
-name = "exifread"
-version = "3.0.0"
-description = "Read Exif metadata from tiff and jpeg files."
-optional = false
-python-versions = "*"
-files = [
-    {file = "ExifRead-3.0.0-py3-none-any.whl", hash = "sha256:2c5c59ef03b3bbee75b82b82d2498006b3c13509f35c9a76c7552faff73fa2d5"},
-    {file = "ExifRead-3.0.0.tar.gz", hash = "sha256:0ac5a364169dbdf2bd62f94f5c073970ab6694a3166177f5e448b10c943e2ca4"},
-]
-
-[package.extras]
-dev = ["mypy (==0.950)", "pylint (==2.13.8)"]
-
-[[package]]
 name = "numpy"
 version = "1.24.3"
 description = "Fundamental package for array computing in Python"
@@ -169,4 +155,4 @@ tests = ["check-manifest", "coverage", "defusedxml", "markdown2", "olefile", "pa
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "b7de5eb3dc208c5036c05ab71eccd528eb2f018412c621999da683ddbc4b20b0"
+content-hash = "614acccf4533714ae04f21ad0369de8dcba57f0b6d5b3e4ad66664dc4a5da65f"
