@@ -9,8 +9,8 @@ import dlib
 import numpy as np
 from dlib import rectangle, shape_predictor
 from PIL import ExifTags, Image, ImageStat
-from utils import settings, types
-from utils.exceptions import PhotoValidatorException
+from dvlpv.utils import settings, types
+from dvlpv.utils.exceptions import PhotoValidatorException
 
 
 class PhotoValidator:
@@ -209,7 +209,6 @@ class PhotoValidator:
         else:
             final_image = cropped
         self.images.cropped_image = final_image
-        self.images.cropped_image.save("/Users/pavelanohin/Desktop/test.jpg")
 
     @property
     def compression_ratio(self) -> int:
