@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "dvl-photo-validator"
+version = "0.1.0"
+description = ""
+authors = ["Your Name <you@example.com>"]
+readme = "README.md"
+packages = [{include = "dvl_photo_validator"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+dlib = "^19.24.1"
+pillow = "^9.5.0"
+numpy = "^1.24.3"
+opencv-python = "^4.7.0.72"
+exifread = "^3.0.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

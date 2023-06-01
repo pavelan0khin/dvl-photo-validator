@@ -1,0 +1,6 @@
+class PhotoValidatorException(Exception):
+    ...
+
+
+class WrongImageSizeException(PhotoValidatorException):
+    ...
