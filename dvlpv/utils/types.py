@@ -3,6 +3,8 @@ from dataclasses import dataclass
 import numpy as np
 from dlib import rectangle
 from PIL import Image
+from datetime import datetime
+from typing import Union
 
 
 @dataclass
@@ -18,6 +20,7 @@ class FaceSearchResult:
 class Images:
     pil_image: Image
     nd_array: np.ndarray
+    cropped_image: Image = None
 
 
 class ImageFormat:
@@ -28,7 +31,7 @@ class SPFLandMark:
     """
     SPF stands for 'Shape Predictor Face'
 
-    You'll find more about landmarks here:
+    You can find more about landmarks here:
     https://miro.medium.com/v2/resize:fit:1400/format:webp/1*tn5D7BMcvq57-T8qy7_tUQ.png
     """
 
@@ -42,3 +45,45 @@ class SPFLandMark:
 
 class ExifTagID:
     PHOTO_DATE = 36867
+
+
+@dataclass
+class Field:
+
+    is_valid: bool
+    value: Union[str, int, bool, datetime.date]
+
+
+@dataclass
+class ValidationResult:
+
+    """
+    This class contains the results of all checks that have been performed on the photo.
+    """
+
+    is_valid: bool = False
+    photo_width: Field = None
+    photo_height: Field = None
+    file_size: Field = None
+    compression_ratio: Field = None
+    horizontal_resolution: Field = None
+    vertical_resolution: Field = None
+    top_head_point: Field = None
+    low_head_point: Field = None
+    head_size: Field = None
+    eyes_line: Field = None
+    eyes_height: Field = None
+    eyes_open: Field = None
+    red_eyes: Field = None
+    head_rotated: Field = None
+    face_centered: Field = None
+    face_shadows: Field = None
+    file_type: Field = None
+    color_space: Field = None
+    color_depth: Field = None
+    background_uniform: Field = None
+    background_neutral: Field = None
+    background_light: Field = None
+    background_changed: Field = None
+    photo_date: Field = None
+    file_name_valid: Field = None
