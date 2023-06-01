@@ -1,10 +1,10 @@
 [tool.poetry]
 name = "dvl-photo-validator"
 version = "0.1.0"
-description = ""
-authors = ["Your Name <you@example.com>"]
+description = "A python library for checking and modifying your photo for eligibility for the green card lottery"
+authors = ["Pavel Anokhin <p.a.anokhin@gmail.com>"]
 readme = "README.md"
-packages = [{include = "dvl_photo_validator"}]
+packages = [{include = "dvlpv"}]
 
 [tool.poetry.dependencies]
 python = "^3.11"
