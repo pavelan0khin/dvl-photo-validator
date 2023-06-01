@@ -32,8 +32,10 @@ class SPFLandMark:
     https://miro.medium.com/v2/resize:fit:1400/format:webp/1*tn5D7BMcvq57-T8qy7_tUQ.png
     """
 
-    LEFT_EYE_INNER_CORNER = 40
-    RIGHT_EYE_INNER_CORNER = 43
+    RIGHT_EYE_INNER_CORNER = 40
+    RIGHT_EYE_OUTER_CORNER = 37
+    LEFT_EYE_INNER_CORNER = 43
+    LEFT_EYE_OUTER_CORNER = 46
     CHIN_LOWER_PART = 9
     NOSE_TIP = 33
 

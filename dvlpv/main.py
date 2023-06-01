@@ -39,6 +39,14 @@ class PhotoValidator:
         nd_array = np.array(pil_image)  # noqa
         self.images = types.Images(pil_image=pil_image, nd_array=nd_array)
 
+    @property
+    def allowed_head_rotation_percent(self) -> float:
+        current_value = settings.ALLOWED_HEAD_ROTATION_PERCENT
+        if 100 > current_value > 0:
+            return current_value / 100
+        raise ValueError(f"The value of the ALLOWED_HEAD_ROTATION_PERCENT environment variable must "
+                         f"be between 0 and 100, but the current value is {current_value}")
+
     @staticmethod
     def _fix_image_orientation(image: Image) -> Image:
         try:
@@ -136,11 +144,36 @@ class PhotoValidator:
 
     @cached_property
     def face_centered(self) -> bool:
-        return True
+        """
+        This method checks if the head in the photo is rotated (horizontally). The
+        check is made by calculating the real value of the position of the tip of
+        the nose, as well as by calculating the expected value of the nose
+        (the middle between the two pupils)
+        :return: True if the difference between the actual position of the nose and the expected
+                 position does not exceed the value from the property-method allowed_head_rotation_percent.
+                 You can set your own value for this percentage via the 'ALLOWED_HEAD_ROTATION_PERCENT'
+                 environment variable
+        """
+        left_eye_outer_corner = self.shape.part(types.SPFLandMark.LEFT_EYE_OUTER_CORNER).x
+        left_eye_inner_corner = self.shape.part(types.SPFLandMark.LEFT_EYE_INNER_CORNER).x
+        left_eye_center_x = (left_eye_outer_corner + left_eye_inner_corner) / 2
+        right_eye_outer_corner = self.shape.part(types.SPFLandMark.RIGHT_EYE_OUTER_CORNER).x
+        right_eye_inner_corner = self.shape.part(types.SPFLandMark.RIGHT_EYE_INNER_CORNER).x
+        right_eye_center_x = (right_eye_outer_corner + right_eye_inner_corner) / 2
+        real_nose_x_coordinate = self.nose_x
+        expected_nose_x_coordinate = int((left_eye_center_x + right_eye_center_x)) / 2
+        return abs(real_nose_x_coordinate - expected_nose_x_coordinate) <= self.allowed_head_rotation_percent * abs(expected_nose_x_coordinate)
 
     def _crop_image(self):
         ...
 
     def validate(self):
         self.shape = self.shape_predictor(self.images.nd_array, self.face)
+        print(self.face_centered)
         return None
+
+
+
+img_path = "/Users/pavelanohin/Downloads/IMG_0901.JPG"
+photo_validator = PhotoValidator(img_path)
+photo_validator.validate()
