@@ -1,4 +1,5 @@
 import io
+import math
 from datetime import datetime
 from functools import cached_property
 from typing import BinaryIO
@@ -88,7 +89,7 @@ class PhotoValidator:
         return int(self.shape.part(types.SPFLandMark.NOSE_TIP).x)
 
     @cached_property
-    def head_top(self) -> int:
+    def head_top_y(self) -> int:
         gray_image = cv2.cvtColor(self.images.nd_array, cv2.COLOR_BGR2GRAY)
         gauss_k_size = 5, 5
         median_k_size = 7
@@ -165,15 +166,47 @@ class PhotoValidator:
         return abs(real_nose_x_coordinate - expected_nose_x_coordinate) <= self.allowed_head_rotation_percent * abs(expected_nose_x_coordinate)
 
     def _crop_image(self):
-        ...
+        head_height = self.chin_y - self.head_top_y
+        image_width, image_height = self.images.pil_image.size
+        min_height = (head_height * 100) / 69
+        max_height = (head_height * 100) / 50
+        if min_height > image_height or max_height > image_height:
+            raise ValueError("The image is too small for the specified head size")
+        new_height = min(max_height, image_height)
+        bottom = self.eyes_y + int(new_height * (1 - (1 - 0.62)))
+        top = bottom - new_height
+        if top < 0:
+            top = 0
+            bottom = new_height
+        elif bottom > image_height:
+            top = image_height - new_height
+            bottom = image_height
+        new_width = new_height
+        left = self.nose_x - new_width // 2
+        right = left + new_width
+        if left < 0:
+            left = 0
+            right = new_width
+        elif right > image_width:
+            left = image_width - new_width
+            right = image_width
+        cropped = self.images.pil_image.crop((left, top, right, bottom))
+        if new_height != 600:
+            final_image = cropped.copy()
+            final_image.thumbnail((600, 600))
+        else:
+            final_image = cropped
+        self.images.cropped_image = final_image
+        self.images.cropped_image.save("/Users/pavelanohin/Desktop/test.jpg")
+
+    @property
+    def compression_ratio(self) -> int:
+        original_width, original_height = self.images.pil_image.size
+        final_width, final_height = self.images.cropped_image.size
+        original_area = original_width * original_height
+        final_area = final_width * final_height
+        return math.ceil(original_area / final_area)
 
     def validate(self):
         self.shape = self.shape_predictor(self.images.nd_array, self.face)
-        print(self.face_centered)
         return None
-
-
-
-img_path = "/Users/pavelanohin/Downloads/IMG_0901.JPG"
-photo_validator = PhotoValidator(img_path)
-photo_validator.validate()
