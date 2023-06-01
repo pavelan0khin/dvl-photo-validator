@@ -1,10 +1,10 @@
 from dataclasses import dataclass
+from datetime import datetime
+from typing import Union
 
 import numpy as np
 from dlib import rectangle
 from PIL import Image
-from datetime import datetime
-from typing import Union
 
 
 @dataclass
@@ -49,7 +49,6 @@ class ExifTagID:
 
 @dataclass
 class Field:
-
     is_valid: bool
     value: Union[str, int, bool, datetime.date]
 

@@ -45,8 +45,10 @@ class PhotoValidator:
         current_value = settings.ALLOWED_HEAD_ROTATION_PERCENT
         if 100 > current_value > 0:
             return current_value / 100
-        raise ValueError(f"The value of the ALLOWED_HEAD_ROTATION_PERCENT environment variable must "
-                         f"be between 0 and 100, but the current value is {current_value}")
+        raise ValueError(
+            f"The value of the ALLOWED_HEAD_ROTATION_PERCENT environment variable must "
+            f"be between 0 and 100, but the current value is {current_value}"
+        )
 
     @staticmethod
     def _fix_image_orientation(image: Image) -> Image:
@@ -155,15 +157,25 @@ class PhotoValidator:
                  You can set your own value for this percentage via the 'ALLOWED_HEAD_ROTATION_PERCENT'
                  environment variable
         """
-        left_eye_outer_corner = self.shape.part(types.SPFLandMark.LEFT_EYE_OUTER_CORNER).x
-        left_eye_inner_corner = self.shape.part(types.SPFLandMark.LEFT_EYE_INNER_CORNER).x
+        left_eye_outer_corner = self.shape.part(
+            types.SPFLandMark.LEFT_EYE_OUTER_CORNER
+        ).x
+        left_eye_inner_corner = self.shape.part(
+            types.SPFLandMark.LEFT_EYE_INNER_CORNER
+        ).x
         left_eye_center_x = (left_eye_outer_corner + left_eye_inner_corner) / 2
-        right_eye_outer_corner = self.shape.part(types.SPFLandMark.RIGHT_EYE_OUTER_CORNER).x
-        right_eye_inner_corner = self.shape.part(types.SPFLandMark.RIGHT_EYE_INNER_CORNER).x
+        right_eye_outer_corner = self.shape.part(
+            types.SPFLandMark.RIGHT_EYE_OUTER_CORNER
+        ).x
+        right_eye_inner_corner = self.shape.part(
+            types.SPFLandMark.RIGHT_EYE_INNER_CORNER
+        ).x
         right_eye_center_x = (right_eye_outer_corner + right_eye_inner_corner) / 2
         real_nose_x_coordinate = self.nose_x
-        expected_nose_x_coordinate = int((left_eye_center_x + right_eye_center_x)) / 2
-        return abs(real_nose_x_coordinate - expected_nose_x_coordinate) <= self.allowed_head_rotation_percent * abs(expected_nose_x_coordinate)
+        expected_nose_x_coordinate = int(left_eye_center_x + right_eye_center_x) / 2
+        return abs(
+            real_nose_x_coordinate - expected_nose_x_coordinate
+        ) <= self.allowed_head_rotation_percent * abs(expected_nose_x_coordinate)
 
     def _crop_image(self):
         head_height = self.chin_y - self.head_top_y
