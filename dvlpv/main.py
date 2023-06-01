@@ -9,6 +9,7 @@ import dlib
 import numpy as np
 from dlib import rectangle, shape_predictor
 from PIL import ExifTags, Image, ImageStat
+
 from dvlpv.utils import settings, types
 from dvlpv.utils.exceptions import PhotoValidatorException
 
