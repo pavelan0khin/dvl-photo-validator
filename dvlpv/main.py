@@ -1,6 +1,7 @@
 import io
-import os.path
 import math
+import os.path
+import tempfile
 from datetime import datetime
 from functools import cached_property
 from typing import BinaryIO
@@ -13,7 +14,6 @@ from PIL import ExifTags, Image, ImageStat
 
 from dvlpv.utils import settings, types
 from dvlpv.utils.exceptions import PhotoValidatorException
-import tempfile
 
 
 class PhotoValidator:
@@ -157,7 +157,9 @@ class PhotoValidator:
                 threshold_image, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
             )
             largest_contour = max(contours, key=cv2.contourArea)
-            self._head_top_y = int(min(largest_contour, key=lambda point: point[0][1])[0][1])
+            self._head_top_y = int(
+                min(largest_contour, key=lambda point: point[0][1])[0][1]
+            )
         return self._head_top_y
 
     @head_top_y.setter
@@ -233,11 +235,11 @@ class PhotoValidator:
 
     @property
     def horizontal_dpi(self) -> int:
-        return int(self.images.cropped_image.info.get('dpi', (None, None))[0])
+        return int(self.images.cropped_image.info.get("dpi", (None, None))[0])
 
     @property
     def vertical_dpi(self) -> int:
-        return int(self.images.cropped_image.info.get('dpi', (None, None))[1])
+        return int(self.images.cropped_image.info.get("dpi", (None, None))[1])
 
     def _crop_image(self):
         head_height = self.chin_y - self.head_top_y
@@ -276,19 +278,23 @@ class PhotoValidator:
 
     @property
     def _validate_horizontal_resolution(self) -> types.Field:
-        dpi = int(self.images.cropped_image.info.get('dpi', (None, None))[0])
+        dpi = int(self.images.cropped_image.info.get("dpi", (None, None))[0])
         return types.Field(dpi >= self.min_dpi, dpi)
 
     @property
     def _validate_vertical_resolution(self) -> types.Field:
-        dpi = int(self.images.cropped_image.info.get('dpi', (None, None))[1])
+        dpi = int(self.images.cropped_image.info.get("dpi", (None, None))[1])
         return types.Field(dpi >= self.min_dpi, dpi)
 
     def validate(self):
         result = types.ValidationResult()
         self.shape = self.shape_predictor(self.images.nd_array, self.face)
         self._crop_image()
-        result_attributes = [attr for attr in types.ValidationResult.__dict__.keys() if not attr.startswith("_")]
+        result_attributes = [
+            attr
+            for attr in types.ValidationResult.__dict__.keys()
+            if not attr.startswith("_")
+        ]
         for attr in result_attributes:
             method_name = f"_validate_{attr}"
             if hasattr(self, method_name):
