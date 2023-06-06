@@ -1,4 +1,5 @@
 import io
+import os.path
 import math
 from datetime import datetime
 from functools import cached_property
@@ -12,6 +13,7 @@ from PIL import ExifTags, Image, ImageStat
 
 from dvlpv.utils import settings, types
 from dvlpv.utils.exceptions import PhotoValidatorException
+import tempfile
 
 
 class PhotoValidator:
@@ -33,6 +35,8 @@ class PhotoValidator:
         self.face_detector = dlib.get_frontal_face_detector()
         self.shape_predictor = dlib.shape_predictor(settings.SHAPE_PREDICTOR_PATH)
         self.shape: shape_predictor
+
+    tmp_image_path = os.path.join(settings.ROOT_DIR, "media")
 
     def _init_images(self):
         if isinstance(self._image, bytes):
@@ -178,46 +182,37 @@ class PhotoValidator:
             real_nose_x_coordinate - expected_nose_x_coordinate
         ) <= self.allowed_head_rotation_percent * abs(expected_nose_x_coordinate)
 
-    def _crop_image(self):
-        head_height = self.chin_y - self.head_top_y
-        image_width, image_height = self.images.pil_image.size
-        min_height = (head_height * 100) / 69
-        max_height = (head_height * 100) / 50
-        if min_height > image_height or max_height > image_height:
-            raise ValueError("The image is too small for the specified head size")
-        new_height = min(max_height, image_height)
-        bottom = self.eyes_y + int(new_height * (1 - (1 - 0.62)))
-        top = bottom - new_height
-        if top < 0:
-            top = 0
-            bottom = new_height
-        elif bottom > image_height:
-            top = image_height - new_height
-            bottom = image_height
-        new_width = new_height
-        left = self.nose_x - new_width // 2
-        right = left + new_width
-        if left < 0:
-            left = 0
-            right = new_width
-        elif right > image_width:
-            left = image_width - new_width
-            right = image_width
-        cropped = self.images.pil_image.crop((left, top, right, bottom))
-        if new_height != 600:
-            final_image = cropped.copy()
-            final_image.thumbnail((600, 600))
-        else:
-            final_image = cropped
-        self.images.cropped_image = final_image
+    @cached_property
+    def original_image_size(self) -> int:
+        with tempfile.NamedTemporaryFile(suffix=".jpg", dir=self.tmp_image_path) as jpg:
+            self.images.pil_image.save(jpg)
+            size = os.path.getsize(jpg.name)
+        return size
+
+    @property
+    def cropped_image_size(self) -> int:
+        with tempfile.NamedTemporaryFile(suffix=".jpg", dir=self.tmp_image_path) as jpg:
+            self.images.cropped_image.save(jpg)
+            size = os.path.getsize(jpg.name)
+        return size
 
     @property
     def compression_ratio(self) -> int:
-        original_width, original_height = self.images.pil_image.size
-        final_width, final_height = self.images.cropped_image.size
-        original_area = original_width * original_height
-        final_area = final_width * final_height
-        return math.ceil(original_area / final_area)
+        return math.ceil(self.original_image_size / self.cropped_image_size)
+
+    def _crop_image(self):
+        head_height = self.chin_y - self.head_top_y
+        head_size_percent = 0.6
+        eyes_line_percent = 0.63
+        image_size = (600, 600)
+        expected_image_height = int(head_height / head_size_percent)
+        eyes_line = int(expected_image_height * eyes_line_percent)
+        top = self.eyes_y - (expected_image_height - eyes_line)
+        bottom = top + expected_image_height
+        left = self.nose_x - int(expected_image_height / 2)
+        right = left + expected_image_height
+        self.images.cropped_image = self.images.pil_image.crop((left, top, right, bottom))
+        self.images.cropped_image = self.images.cropped_image.resize(image_size, Image.LANCZOS)
 
     def validate(self):
         self.shape = self.shape_predictor(self.images.nd_array, self.face)
